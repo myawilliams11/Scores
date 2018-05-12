@@ -6,8 +6,6 @@ const hostname = "localhost";
 const port = 2000;
 // tis is the server ID
 
-
-var resources = { "/IP": "Internet Protocol", "/TCP": "Transmission Control Protocol" };
 // this is to check if i set up the host and server correctly
 
 
@@ -20,32 +18,43 @@ var pushScores = [{ "name": "Chok", "score": 42 }];
 
 
 const server = http.createServer((req, res) => {
+  res.setHeader('Content-Type', 'application/json');
   // this is me naming the server
-  jsonBody(req, res, function (err, body) {
+  
     // this is required to add any "POST" into my server data
 
-    let jsonBody;
     if (req.method === "GET") {
       // if using GET in rest client
       if (req.url === "/scores") {
         // if you specifically add "/scores" to the address bar
         res.statusCode = 200;
         // then, show statuss 200 which is a string of scores
-        resources["/scores"] = scores;
-        // adding /scores to the url
 
-        body = JSON.stringify(resources["/scores"]);
+        res.end(JSON.stringify(scores));
         // show the scores in a string using var scores
+      } else {
+        // for any other requests
+        res.statusCode = 404;
+        // use status code 404 (eror)
+        res.setHeader('Content-Type', 'text/plain');
+        // 
+        body = "Error: invalid URL";
+        // display message above
       }
     } else if (req.method === "POST") {
+
+      jsonBody(req, res, function (err, body) {
       //  if i do a post request
       if (req.url === "/scores") {
         // if i use a post request adding /scores to the url
         res.statusCode = 201;
         // use status code 201
-        resources["/scores"] = scores, pushScores;
-        // when /scores is added to url, post the contents or variable scores and pushScores
-        body = JSON.stringify(resources["/scores"]);
+        scores.push(body);
+        scores.sort((a,b) => (b.score - a.score));
+        // displays highest scores
+        scores.splice(3);
+      //  showing only 3 scores
+        res.end(JSON.stringify(body));
         // show results in a string
       } else {
         // for any other requests
@@ -56,12 +65,9 @@ const server = http.createServer((req, res) => {
         body = "Error: invalid URL";
         // display message above
       }
-    }
-    res.end(body);
-    //  end of body displays
-  });
-});
-
+    })
+}
+})
 server.listen(port, hostname, () => {
   console.log(`Server running at http://${hostname}:${port}/`);
   // the link to the server
